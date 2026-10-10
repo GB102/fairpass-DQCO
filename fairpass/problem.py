@@ -226,16 +226,38 @@ class FastEval:
         self.pw = c.weight[self.pi] * c.rate[self.pi] * ov / 8000.0  # times p_i p_j
         self.lin = c.weight * c.rate * c.dur / 8000.0                 # times p_i
 
-    def unique_kB(self, x, p):
+    def unique_kB_pairwise(self, x, p):
+        """The optimisation model's value: second-order (Bonferroni) lower bound on expected unique data."""
         x = np.asarray(x, float)
         return float(self.lin @ (p * x) - self.pw @ (p[self.pi] * p[self.pj] * x[self.pi] * x[self.pj]))
+
+    def unique_kB(self, x, p):
+        """EXACT expected unique data under independent pass successes: for every satellite, integrate
+        rate * w * (1 - prod_{selected passes covering t} (1 - p_i)) over time. Used to score schedules."""
+        c = self.c
+        on = np.flatnonzero(np.asarray(x) == 1)
+        if len(on) == 0:
+            return 0.0
+        tot = 0.0
+        for s in np.unique(c.sat[on]):
+            idx = on[c.sat[on] == s]
+            if len(idx) == 1:
+                i = idx[0]
+                tot += c.weight[i] * c.rate[i] * p[i] * (c.los[i] - c.aos[i]) / 8000.0
+                continue
+            t = np.unique(np.concatenate([c.aos[idx], c.los[idx]]))
+            mid = 0.5 * (t[:-1] + t[1:])
+            cover = (c.aos[idx][None, :] <= mid[:, None]) & (c.los[idx][None, :] >= mid[:, None])
+            miss = np.prod(np.where(cover, 1 - p[idx][None, :], 1.0), axis=1)
+            i0 = idx[0]
+            tot += float(c.weight[i0] * c.rate[i0] * np.sum((1 - miss) * np.diff(t)) / 8000.0)
+        return tot
 
 
 def schedule_metrics(c: Contacts, x: np.ndarray, *, K: int = 2, active=None, fast: FastEval | None = None,
                      p=None) -> dict:
-    if fast is not None:
-        return _metrics_fast(fast, x, K=K, active=active, p=c.p if p is None else p)
-    return _metrics_slow(c, x, K=K, active=active)
+    fast = fast if fast is not None else FastEval(c)
+    return _metrics_fast(fast, x, K=K, active=active, p=c.p if p is None else p)
 
 
 def _metrics_fast(fe: FastEval, x, *, K, active, p):
@@ -253,7 +275,8 @@ def _metrics_fast(fe: FastEval, x, *, K, active, p):
     cnt, ecnt, share = map(np.array, (cnt, ecnt, share))
     viol = int((x[fe.hard[:, 0]] * x[fe.hard[:, 1]]).sum()) if len(fe.hard) else 0
     return {
-        "expected_unique_kB": fe.unique_kB(x, p), "n_contacts": int(x.sum()), "missions": int(len(sats)),
+        "expected_unique_kB": fe.unique_kB(x, p), "pairwise_model_kB": fe.unique_kB_pairwise(x, p),
+        "n_contacts": int(x.sum()), "missions": int(len(sats)),
         "starved": int(np.sum(cnt == 0)), "exp_successful_lt1": int(np.sum(ecnt < 1.0)),
         "below_K": int(np.sum(cnt < K)),
         "jain_share": float(share.sum() ** 2 / (len(share) * np.sum(share ** 2) + 1e-12)),

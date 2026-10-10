@@ -34,13 +34,16 @@ For candidate pass *i* (satellite *s*, station *g*, window [AOS, LOS]):
 
 | term | form | meaning |
 |---|---|---|
-| value | h_i = w_s · p_i · baud_s · dur_i / 8000 | expected delivered data (kB) |
+| value | h_i = w_s · p_i · min(baud_s, 9600) · dur_i / 8000 | expected delivered data (kB); the rate is capped at 9,600 bit/s, the upper end of typical SatNOGS decoding (LoRa 'baud' is not a payload rate) |
 | redundancy | J_ij = −w_s · baud_s · overlap_ij · p_i p_j / 8000 | same satellite seen by two stations at once: exact expected *unique* data for pairs |
 | fairness | λ · E[g(n_s)], g(n) = n − n(n−1)/(2K) | concave utility per active mission; under independent successes E[g] = Σp_i x_i − (1/K) Σ_{i<j} p_i p_j x_i x_j |
 | antenna | x_i + x_j ≤ 1 (penalty P = 1.5 · max linear gain in the QUBO) | same station, intervals closer than the 60 s re-pointing gap |
 
 * *Active mission*: a satellite whose mean predicted pass success is ≥ 0.3.
 * Mission weights w_s = 1, because no public priorities exist. Weights are a user input.
+* **Scoring vs optimisation.** The optimiser uses the pairwise redundancy term. Every reported schedule is scored with
+  the **exact** expected unique data, the time-integral of 1 − Π(1 − p) over the stations listening, because the
+  pairwise form is very loose when many uncoordinated stations take the same pass.
 * The penalised QUBO has only feasible optima: every other coupling is ≤ 0, so removing one endpoint of a
   violated pair gains at least P − h_i > 0.
 * CP-SAT models fairness exactly with one integer square per mission, and CP-SAT's optimum is cross-checked against
@@ -55,7 +58,7 @@ All schedulers share the same candidate set and are judged by the same validated
 * **coordinated greedy + local search.**
 * **coordinated CP-SAT optimum:** throughput only (λ = 0) and a λ sweep.
 * **Model-assumption sensitivity:** re-optimise under (a) commanded downlink (one station per satellite at a time),
-  (b) contact-time value (baud ignored), (c) the geometry-only success model; score every schedule under the primary model.
+  (b) contact-time value (baud ignored), (c) listed baud without the 9,600 cap, (d) the geometry-only success model; score every schedule under the primary model.
 
 ## 2.5 Quantum step (H3)
 * **Windows:** the n ∈ {8, 10, 12} highest-value candidate passes with AOS in a 20-minute window. All other passes

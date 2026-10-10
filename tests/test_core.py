@@ -67,8 +67,21 @@ def test_lns_monotone_feasible():
         assert pb.objective(x)[0] >= pb.objective(x0)[0] - 1e-9
 
 
+def test_exact_unique_data():
+    from fairpass.problem import FastEval
+    # one satellite, three stations: exact union vs closed form; pairwise bound is exact for <= 2 overlaps
+    c = Contacts(sat=np.array([1, 1, 1]), station=np.array([1, 2, 3]), aos=np.array([0.0, 0, 0]),
+                 los=np.array([100.0, 100, 100]), max_el=np.array([50.0] * 3), rate=np.array([8000.0] * 3),
+                 p=np.array([0.5, 0.5, 0.5]), weight=np.ones(3))
+    fe = FastEval(c)
+    assert abs(fe.unique_kB(np.array([1, 1, 1]), c.p) - 100 * (1 - 0.125)) < 1e-9
+    assert abs(fe.unique_kB(np.array([1, 1, 0]), c.p) - fe.unique_kB_pairwise(np.array([1, 1, 0]), c.p)) < 1e-9
+    assert fe.unique_kB_pairwise(np.array([1, 1, 1]), c.p) < fe.unique_kB(np.array([1, 1, 1]), c.p)
+
+
 if __name__ == "__main__":
     test_exact_matches_bruteforce()
     test_restrict_consistent()
     test_lns_monotone_feasible()
+    test_exact_unique_data()
     print("ok")

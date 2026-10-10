@@ -27,6 +27,10 @@ ROOT = Path(__file__).resolve().parents[1]
 T0 = datetime(2026, 10, 1, tzinfo=timezone.utc)
 HOURS = 24.0
 TAU = 60.0
+MAX_TLE_AGE_H = 14 * 24
+# Value proxy uses min(listed baud, RATE_CAP): typical SatNOGS receive chains decode <= 9600 bit/s, and for
+# LoRa the listed "baud" is not a payload bit rate. The uncapped listed value is kept as a sensitivity case.
+RATE_CAP = 9600.0
 
 
 def load(pattern):
@@ -65,7 +69,7 @@ def main():
             continue
         e = tle_epoch(r["tle1"])
         s = r["norad_cat_id"]
-        if e <= t_end and (s not in tle or e > tle[s][2]):
+        if e <= t_end and (s not in tle or e > tle[s][2]):  # latest usable epoch
             tle[s] = (r["tle1"], r["tle2"], e)
         w = 3 if r["status"] == "good" else 1
         txc[s][(r["transmitter_mode"], r["transmitter_baud"], r.get("transmitter_downlink_low"))] += w
@@ -81,8 +85,11 @@ def main():
             return True
         return any((a.get("frequency") or 0) <= f <= (a.get("frequency_max") or 0) for a in st_meta[g]["antenna"])
 
-    rows, band_skipped = [], 0
+    rows, band_skipped, stale = [], 0, []
     for s, (l1, l2, ep) in sorted(tle.items()):
+        if (T0.timestamp() - ep) / 3600 > MAX_TLE_AGE_H:  # SGP4 error grows ~1-3 km/day: drop stale elements
+            stale.append(int(s))
+            continue
         mode, baud, f_dl = txc[s].most_common(1)[0][0]
         if not baud or baud <= 0:
             continue
@@ -95,7 +102,7 @@ def main():
             for p in find_passes(sat, s, g, m["lat"], m["lng"], m["altitude"] or 0, T0, HOURS,
                                  horizon_deg=eff_h[g], step_s=10.0):
                 rows.append({"sat": s, "station": g, "aos": (p.aos - T0).total_seconds(),
-                             "los": (p.los - T0).total_seconds(), "max_el": p.max_el, "rate": float(baud),
+                             "los": (p.los - T0).total_seconds(), "max_el": p.max_el, "rate": min(float(baud), RATE_CAP), "baud_listed": float(baud),
                              "mode": mode, "tle_age_h": (T0.timestamp() - ep) / 3600})
     el = np.array([r["max_el"] for r in rows])
     md = [r["mode"] for r in rows]
@@ -130,6 +137,7 @@ def main():
         "contacts": {
             "sat": sal, "station": stl, "aos": [r["aos"] for r in rows], "los": [r["los"] for r in rows],
             "max_el": el.tolist(), "rate": [r["rate"] for r in rows], "p": p.tolist(),
+            "baud_listed": [r["baud_listed"] for r in rows],
             "p_geom": (geom.predict(el, md, stl, sal) if geom else p).tolist(),
             "weight": [1.0] * len(rows), "mode": md, "tle_age_h": [r["tle_age_h"] for r in rows],
             "sat_seen_in_training": [s in seen for s in sal],
@@ -137,7 +145,7 @@ def main():
         "p_bootstrap": pb.round(5).tolist(),
         "actual": {"index": list(actual.keys()), "obs_id": list(actual.values()),
                    "status": [outcome[k] for k in actual], "unmatched_observations": unmatched},
-        "band_pairs_skipped": band_skipped,
+        "band_pairs_skipped": band_skipped, "stale_tle_satellites_dropped": stale,
         "provenance": {"tle_source": "TLEs stored with SatNOGS observations (CC BY-SA 4.0)",
                        "success_model": "results/link_model.json", "weights": "all 1.0 (no mission priorities "
                        "are public; weights are a user input)"},
@@ -147,6 +155,7 @@ def main():
     n_sat = len(set(sal))
     print(f"stations {len(stations)}  satellites {n_sat}  candidate passes {len(rows)}  "
           f"(satellite-station pairs skipped for antenna band: {band_skipped})")
+    print(f"satellites dropped for TLE older than 14 days: {len(stale)}")
     print(f"actual observations matched {len(actual)}  unmatched {unmatched}")
     print("TLE age (h) median %.1f max %.1f" % (np.median([r['tle_age_h'] for r in rows]),
                                                np.max([r['tle_age_h'] for r in rows])))

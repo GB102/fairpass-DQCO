@@ -115,7 +115,8 @@ def main(window: int = 0, depth: int = 2, shots: int = 500, seed: int = 7):
         print(f"Best sampled schedule reaches {f[best] / f_opt:.3f} of the window optimum.")
     print(f"Matched-budget classical sampling ({shots} uniform random schedules): best {max(fr.max(), 0) / f_opt:.3f}"
           f" of optimum, optimum hit {k_opt_r} times.")
-    print(f"Uncoordinated per-station greedy (what stations run today): {f_inc / f_opt:.3f} of optimum.")
+    print(f"Uncoordinated per-station greedy (what stations run today): {f_inc / f_opt:.3f} of optimum"
+          + (" (negative: its passes here duplicate coverage already scheduled elsewhere)." if f_inc < 0 else "."))
 
     if best is not None:
         xb = X[best]

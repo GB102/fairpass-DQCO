@@ -11,6 +11,7 @@ run 02_validate_passes.py "*.json"
 run 03_fit_link_model.py
 run 04_build_instance.py
 run 05_schedule_study.py
+run 05b_paired_differences.py
 run 06_qaoa_study.py
 run 07_hybrid_lns.py
 run 09_next_measurement.py

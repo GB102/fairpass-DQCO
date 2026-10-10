@@ -20,7 +20,9 @@ public data (SatNOGS observations + stored TLEs, SatNOGS DB)
   -> recommendation with bootstrap uncertainty + the next measurement worth making
 ```
 
-Results, limitations and the presentation script are in [`REPORT.md`](REPORT.md). The go/no-go assessment written
+Results and limitations are in [`REPORT.md`](REPORT.md). The video script is in
+[`docs/PRESENTATION_SCRIPT.md`](docs/PRESENTATION_SCRIPT.md), and the Qollab project page text in
+[`demo/qollab/PROJECT_CARD.md`](demo/qollab/PROJECT_CARD.md). The go/no-go assessment written
 at the 15% mark is in [`docs/01_feasibility.md`](docs/01_feasibility.md).
 
 ## Run it
@@ -50,12 +52,14 @@ The demo falls back to Qiskit Aer, or to the BasicSimulator, when no Qollab `bac
 | 2 | `scripts/02_validate_passes.py` | `results/pass_validation.*` (SGP4 vs network records) |
 | 3 | `scripts/03_fit_link_model.py` | `results/link_model*.json`, `results/fig1_data.json` |
 | 4 | `scripts/04_build_instance.py` | `data/processed/instance_2026-10-01.json` |
-| 5 | `scripts/05_schedule_study.py` | `results/schedule_study.json` |
+| 5 | `scripts/05_schedule_study.py`, `05b_paired_differences.py` | `results/schedule_study.json`, `results/paired_differences.json` |
 | 6 | `scripts/06_qaoa_study.py` | `results/qaoa_study.json`, `results/qaoa_params.json` |
 | 7 | `scripts/07_hybrid_lns.py` | `results/hybrid_lns.json` |
-| 8 | `scripts/08_figures.py` | `figures/fig1–3.{png,svg}` |
+| 8 | `scripts/08_figures.py` | `figures/fig1–4.{png,svg}` |
 | 9 | `scripts/09_next_measurement.py` | `results/next_measurement.json` |
 | 10 | `scripts/10_build_demo.py` | `demo/qollab/data/demo_bundle.json` |
+| 11 | `scripts/11_manifest.py` | `docs/DATA_MANIFEST.md` |
+| 12 | `scripts/12_forward_plan.py` | `results/forward_plan*.{json,csv}` (tomorrow's plan from current CelesTrak TLEs) |
 
 Tests: `python -m tests.test_core` checks CP-SAT against brute force and sub-problem consistency. `python -m tests.test_qaoa`
 checks the numpy QAOA simulator against the Qiskit circuit.
@@ -75,6 +79,7 @@ docs/            feasibility memo, data manifest
 ## Licences and attribution
 
 * Code and documentation: MIT (see `LICENSE`).
+* CelesTrak GP data (`active` group, cached once for the forward plan) is © CelesTrak, used under its usage policy.
 * SatNOGS Network and SatNOGS DB data (observations, stations, transmitters, and the TLEs stored with observations):
   © Libre Space Foundation and SatNOGS contributors, **CC BY-SA 4.0**. Files under `data/` derived from them keep that
   licence. The data are not relicensed under MIT. See [`docs/DATA_MANIFEST.md`](docs/DATA_MANIFEST.md).

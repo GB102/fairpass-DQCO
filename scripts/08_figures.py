@@ -52,7 +52,8 @@ def fig1():
     a.hist(d, bins=np.arange(-1.5, 1.51, 0.1), color=S1, rwidth=0.85)
     a.set_xlabel("computed − recorded max elevation (deg)")
     a.set_ylabel("observations")
-    a.set_title("a  Pass geometry reproduced from stored TLEs")
+    a.set_title("a  Pass geometry vs network records")
+    a.set_ylim(0, a.get_ylim()[1] * 1.45)
     a.text(0.02, 0.97, f"n = {pv['n_matched']}\nmedian |err| {pv['max_el_error_deg']['median_abs']:.2f}°\n"
            f"{100 * pv['max_el_error_deg']['frac_within_1deg']:.1f}% within 1°\n(records are whole degrees)",
            transform=a.transAxes, va="top", fontsize=9, color=INK2)
@@ -88,7 +89,7 @@ def fig1():
     a.text(0.03, 0.97, f"AUC full {ev['full']['auc']:.2f} vs geometry {ev['geom']['auc']:.2f}\n"
            f"log-loss {ev['full']['log_loss']:.3f} vs {ev['geom']['log_loss']:.3f} (const "
            f"{ev['const']['log_loss']:.3f})", transform=a.transAxes, va="top", fontsize=9, color=INK2)
-    fig.suptitle("Fig. 1  Model layer tested on real SatNOGS observations (train 09-13…09-24, test 09-26…09-30)",
+    fig.suptitle("Fig. 1  Model layer tested on real SatNOGS observations (train 09-13…09-23, test 09-26…09-29)",
                  x=0.01, ha="left", fontsize=11.5, fontweight="bold")
     fig.tight_layout()
     save(fig, "fig1_model_vs_measurements")
@@ -183,8 +184,8 @@ def fig3(lam_star):
         a.set_ylabel("P(optimal schedule) ÷ uniform")
         a.set_title(f"{'bc'[sizes.index(n)]}  QAOA amplification, {n}-pass windows")
         a.legend(fontsize=8.5, loc="upper right")
-    fig.suptitle("Fig. 3  Decision boundaries: how much fairness to buy, and where the quantum step stops helping "
-                 "(held-out windows, transferred angles)", x=0.01, ha="left", fontsize=11.5, fontweight="bold")
+    fig.suptitle("Fig. 3  How much fairness to buy, and how QAOA's edge over random sampling decays with gate noise "
+                 "(held-out windows, transferred angles; no break-even reached up to 2%)", x=0.01, ha="left", fontsize=11.5, fontweight="bold")
     fig.tight_layout()
     save(fig, "fig3_decision_boundaries")
 

@@ -25,6 +25,7 @@ from fairpass.problem import Contacts, build_problem  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[1]
 LAM, K = 200.0, 2
+N_SCREEN, N_BOOT = 25, 20
 
 
 def neighbourhood(c, s, tau=60.0):
@@ -54,15 +55,18 @@ def main():
                     obs_counts[r["norad_cat_id"]] = obs_counts.get(r["norad_cat_id"], 0) + 1
     rows = []
     sats = np.unique(c.sat)
-    # screen: satellites whose replicate spread in mean p is non-trivial
+    # screen: rank satellites by how much their total candidate value moves across replicates, keep the top
+    # N_SCREEN (a full re-optimisation per satellite and replicate is the expensive step)
     spread = {int(s): float(np.std(pboot[:, c.sat == s].mean(1))) for s in sats}
-    cand = [s for s in sats if spread[int(s)] > 0.02]
-    print(f"{len(cand)} of {len(sats)} satellites have bootstrap spread > 0.02")
+    vb = pboot * (c.weight * c.rate * c.dur / 8000.0)[None, :]
+    swing = {int(s): float(np.std(vb[:, c.sat == s].sum(1))) for s in sats}
+    cand = sorted(sats, key=lambda s: -swing[int(s)])[:N_SCREEN]
+    print(f"screened {len(cand)} of {len(sats)} satellites by value swing", flush=True)
     for s in cand:
         idx_s = np.flatnonzero(c.sat == s)
         nb = neighbourhood(c, s)
         regrets = []
-        for b in range(len(pboot)):
+        for b in range(N_BOOT):
             p = c.p.copy()
             p[idx_s] = pboot[b, idx_s]
             cb = Contacts(c.sat, c.station, c.aos, c.los, c.max_el, c.rate, p, c.weight)
@@ -76,13 +80,14 @@ def main():
             y[nb] = 0
             y[kept] = xs
             regrets.append(max(0.0, pb.objective(y)[0] - pb.objective(x_nom)[0]))
-        rows.append({"norad": int(s), "evpi_kB": float(np.mean(regrets)), "regret_p90": float(np.percentile(regrets, 90)),
+        rows.append({"norad": int(s), "value_swing_kB": swing[int(s)], "evpi_kB": float(np.mean(regrets)), "regret_p90": float(np.percentile(regrets, 90)),
                      "p_nominal_mean": float(c.p[idx_s].mean()), "p_boot_sd": spread[int(s)],
                      "n_vetted_obs": int(obs_counts.get(int(s), 0)), "n_candidate_passes": int(len(idx_s)),
                      "baud": float(c.rate[idx_s][0]), "scheduled_nominal": int(x_nom[idx_s].sum())})
     rows.sort(key=lambda r: -r["evpi_kB"])
     total = float(sum(r["evpi_kB"] for r in rows))
-    out = {"model_version": MODEL_VERSION, "lam": LAM, "K": K, "ranking": rows, "sum_partial_evpi_kB": total,
+    out = {"model_version": MODEL_VERSION, "lam": LAM, "K": K, "screened": N_SCREEN, "replicates": N_BOOT,
+           "ranking": rows, "sum_partial_evpi_kB": total,
            "day_objective_kB": float(build_problem(c, lam=LAM, K=K, active=act).objective(x_nom)[0])}
     if rows:
         top = rows[0]

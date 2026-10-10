@@ -78,12 +78,14 @@ def main():
                      "f_opt": float(fmax), "optima": optima, "n_optima": len(optima),
                      "gap_incumbent": float((fmax - f_inc) / fmax), "params": prm,
                      "precomputed": {"p_opt_ideal": pr_ideal, "p_opt_forte_like": pr_noisy}})
-    recs.sort(key=lambda r: (-r["gap_incumbent"], r["t"]))
+    # default window: the held-out window whose optimal plan keeps the most passes (a busy, readable example);
+    # ties -> larger loss of today's greedy
+    recs.sort(key=lambda r: (-max(sum(o) for o in r["optima"]), -r["gap_incumbent"], r["t"]))
     first = recs[:1]
     rest = sorted(recs[1:], key=lambda r: r["t"])[:MAX_WINDOWS - 1]
     windows = first + rest
     for i, r in enumerate(windows):
-        r["selection_note"] = ("Default: the held-out window where today's greedy loses most."
+        r["selection_note"] = ("Default: the held-out window whose optimal plan keeps the most passes."
                                if i == 0 else "Held-out window (time order).")
 
     label = {"actual": "Actual SatNOGS schedule that day", "station_maxel": "Per-station greedy by elevation",
@@ -103,12 +105,18 @@ def main():
                 f"{fair['starved']} starved missions vs {thr['starved']} (throughput-only) and {inc_s['starved']} "
                 f"(uncoordinated), at {100 * (1 - fair['expected_unique_kB'] / thr['expected_unique_kB']):.1f}% "
                 f"less expected data than the throughput optimum.") if fair else "see REPORT.md"
+    sens = ss.get("sensitivity", {}).get("value_uncapped_listed_baud")
     nm_text = None
-    if nm and nm.get("recommendation"):
-        r = nm["recommendation"]
-        nm_text = (f"~{r['extra_vetted_passes']} vetted high-elevation observations of "
-                   f"{names.get(r['norad'], r['norad'])} (NORAD {r['norad']}); expected value of resolving its "
-                   f"link uncertainty {r['evpi_kB_per_day']:.0f} kB-equivalent/day.")
+    if sens:
+        fair_kb = ss["schedules"][f"cpsat_fair_{int(LAM)}"]["expected_unique_kB"]
+        loss = 1 - sens["metrics_under_primary_model"]["expected_unique_kB"] / fair_kb
+        head = (f"success-rate uncertainty barely matters (partial EVPI {nm['sum_partial_evpi_kB']:.0f} kB/day); "
+                if nm else "")
+        nm_text = head + (
+                   f"the plan hinges on how data rate is valued: capping listed baud at 9,600 bit/s or not changes "
+                   f"{100 * (1 - sens['jaccard_vs_primary_schedule']):.0f}% of chosen passes and {100 * loss:.0f}% of "
+                   f"expected data. Measure it: a one-day decode campaign (>= 15 vetted passes per rate class) on the "
+                   f"high-rate and LoRa satellites, counting decoded frames.")
     bundle = {
         "meta": {"model_version": MODEL_VERSION, "created_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
                  "data_licence": "Derived from SatNOGS Network/DB data, CC BY-SA 4.0 (Libre Space Foundation)",

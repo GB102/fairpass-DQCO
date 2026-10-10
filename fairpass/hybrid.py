@@ -34,6 +34,10 @@ def extract_windows(c, pb: Problem, x_inc, *, n: int, W: float = 1200.0, step: f
         sub, kept = pb.restrict(kept[:n], x_inc)
         if len(kept) != n or len(sub.hard) + len(sub.J) < min_pairs:
             continue
+        # non-trivial only: the window optimum must deliver positive value (otherwise "do nothing" is optimal
+        # because every free pass is redundant with, or crowded out by, the fixed schedule)
+        if brute_force(sub)[1].max() <= 1e-6:
+            continue
         out.append({"t": float(t), "kept": kept, "sub": sub})
     return out
 

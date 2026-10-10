@@ -126,6 +126,9 @@ def main():
         "value_contact_time": dict(c=Contacts(c.sat, c.station, c.aos, c.los, c.max_el,
                                               np.full(c.n, float(np.median(c.rate))), c.p, c.weight),
                                    mode="broadcast"),
+        "value_uncapped_listed_baud": dict(c=Contacts(c.sat, c.station, c.aos, c.los, c.max_el,
+                                                      np.array(inst["contacts"]["baud_listed"], float), c.p,
+                                                      c.weight), mode="broadcast"),
         "geometry_only_success": dict(c=with_p(c, np.array(inst["contacts"]["p_geom"])), mode="broadcast"),
     }
     for name, a in alts.items():
