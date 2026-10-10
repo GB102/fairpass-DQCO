@@ -4,3 +4,5 @@ __pycache__/
 .idea/
 data/cache/
 results/fetch.log
+demo/qollab/fairpass_window.png
+results/*.log
