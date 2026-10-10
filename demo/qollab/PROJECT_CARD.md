@@ -28,6 +28,21 @@ On held-out windows this finds the optimal plan **55–435×** more often than r
 shots. In simulation that holds up to 2% two-qubit error. It edges tuned simulated annealing at 100 samples (by
 0.01–0.07 of the optimum) but does **not** beat greedy, and the windows are small enough to solve exactly. This is a measured principle, **not a speed-up**.
 
+### Quantum vs classical, at a glance
+Same held-out windows, same budget of samples or objective evaluations. Metric: quality of the best plan found, as a
+fraction of the exact optimum (1.00 = optimal). About 50 windows per size.
+
+| Window size | QAOA (p = 3, 100 shots) | Uniform random (100 samples) | Simulated annealing (100 evals) | Greedy |
+|---|---|---|---|---|
+| 8 passes | 1.000 | 0.642 | 0.991 | 0.998 |
+| 10 passes | 1.000 | 0.464 | 0.975 | 0.999 |
+| 12 passes | 0.999 | 0.329 | 0.926 | 0.988 |
+
+Inside the full-day scheduler (share of the gap to the best schedule closed): QAOA 70.8%, simulated annealing 71.4%,
+greedy 71.4%, exact enumeration 71.5%, random sampling 69.4%. **Plain classical local search over the whole day closes
+96.7%, so classical wins at this problem size.** On IonQ's Forte 1 noise model (this demo, window 0), QAOA hit the
+optimal plan 16× more often than random sampling. Full details are in `REPORT.md`, section 4.
+
 ## How to run
 1. Press **Run on Qollab** and pick a backend. The built-in simulator is instant. **IonQ Forte 1**
    (remote noise-model simulator, free) runs IonQ's own noise model.
