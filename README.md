@@ -83,6 +83,9 @@ docs/            feasibility memo, data manifest
 * SatNOGS Network and SatNOGS DB data (observations, stations, transmitters, and the TLEs stored with observations):
   © Libre Space Foundation and SatNOGS contributors, **CC BY-SA 4.0**. Files under `data/` derived from them keep that
   licence. The data are not relicensed under MIT. See [`docs/DATA_MANIFEST.md`](docs/DATA_MANIFEST.md).
+  **The data in this repository (`data/`, `results/`, and `demo/qollab/data/`) are not covered by the MIT licence.**
+  Sources: [SatNOGS Network](https://network.satnogs.org) and [SatNOGS DB](https://db.satnogs.org).
+  Licence: [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
 * The SatNOGS auto-scheduler (AGPL-3.0) was read for its algorithm only. No code was copied. Our per-station greedy
   baseline is an independent re-implementation of the same rule.
 * AI assistance: the code, analysis and text were developed with an AI coding assistant (Claude) during the build
