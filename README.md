@@ -1,6 +1,6 @@
 # FairPass: fairness-aware contact scheduling for open ground-station networks
 
-*Qollab × IonQ Quantum Hackathon 2026, Quantum Impact theme (space).*
+*Qollab × IonQ Quantum Hackathon 2026, Quantum Impact theme.*
 **This effort is supported by Qollab & IonQ.**
 
 Small-satellite teams depend on open ground-station networks such as [SatNOGS](https://network.satnogs.org).
