@@ -20,8 +20,7 @@ public data (SatNOGS observations + stored TLEs, SatNOGS DB)
   -> recommendation with bootstrap uncertainty + the next measurement worth making
 ```
 
-Results and limitations are in [`REPORT.md`](REPORT.md). The video script is in
-[`docs/PRESENTATION_SCRIPT.md`](docs/PRESENTATION_SCRIPT.md), and the Qollab project page text in
+Results and limitations are in [`REPORT.md`](REPORT.md). The Qollab project page text in
 [`demo/qollab/PROJECT_CARD.md`](demo/qollab/PROJECT_CARD.md). The go/no-go assessment written
 at the 15% mark is in [`docs/01_feasibility.md`](docs/01_feasibility.md).
 
