@@ -32,7 +32,8 @@ Where is the quantum step? For a crowded 20-minute window, the candidate passes 
 angles learned on *morning* windows and reused unchanged in the *afternoon*, runs as **a single job** on IonQ's
 simulator. Each measurement is an antenna plan.
 On held-out windows it finds the best plan **55 to 400 times more often** than random sampling with the same number of
-shots. In our noise simulations that held up to two percent two-qubit error, beyond IonQ's published error rates.
+shots. And on IonQ's own Forte 1 noise model, run through Qollab, it still hit the optimal plan 16 times more often
+than random, and its best sample was the optimum.
 
 **[2:05 – Fig. 4]**
 Now the honest part. Simulated annealing and plain greedy do just as well at the same budget. Inside the full

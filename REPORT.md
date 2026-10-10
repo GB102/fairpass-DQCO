@@ -173,6 +173,22 @@ CVaR(0.1)-trained, at every size):
   (n = 10, p = 3) that is about 40 two-qubit gates (≈ native ZZ on Forte) and logical depth about 20. Transpiled to
   {rz, sx, x, cx}, the CX count is 2× the RZZ count. No ancillas.
 
+**Live runs through Qollab** (`results/qollab_runs/`): window 0, p = 2, 500 shots, **one job each**, unchanged demo
+code:
+
+| backend | P(optimal plan) per shot [95% CI] | × uniform | feasible shots [95% CI] | best sample |
+|---|---|---|---|---|
+| exact ideal distribution (precomputed) | 0.025 | 26 | 0.805 | n/a |
+| Qollab built-in simulator (ideal) | 0.020 [0.011, 0.036] | 20 | 0.798 [0.761, 0.831] | optimal |
+| **IonQ noise-model simulator (Forte 1, via Qollab)** | **0.016 [0.008, 0.031]** | **16** | **0.732 [0.692, 0.769]** | **optimal** |
+
+* **The amplification survives IonQ's own noise model.** P(optimum) on IonQ is within sampling error of our Aer
+  Forte-like prediction (0.023), and 16× uniform.
+* **IonQ's noise is measurably visible in feasibility.** The fraction of feasible antenna plans drops from 0.80 to
+  0.73, and the 95% interval excludes the ideal value.
+* **This is a noise-model simulation, not hardware.** These are IonQ's black-box noise-model simulations; a hardware
+  run (credits) was not made.
+
 **End-to-end hybrid** (Fig. 4): large-neighbourhood search over the day with 20-minute, 10-pass windows, 2 rounds,
 starting from the per-station greedy plan, against the global CP-SAT incumbent:
 
@@ -232,8 +248,9 @@ network. A second, cheaper step: run the recommended plan for one day and compar
 * The 10 stations are a non-random European sub-network. Unvetted observations are excluded, which may bias labels.
 * CP-SAT is near-optimal, not proven optimal (gap 1–3%). The redundancy term is a lower bound when three or more
   stations overlap.
-* QAOA results are classical simulations. The depolarising noise model ignores crosstalk, drift and coherent error.
-  Running on IonQ's noise models or hardware through Qollab is the next check. The demo makes that one click.
+* QAOA results are simulations: our Aer depolarising model plus one run on IonQ's noise-model simulator through
+  Qollab (section 4), which agreed. No IonQ hardware run was made, and the depolarising model ignores crosstalk,
+  drift and coherent error.
 * The quantum step offers **no** computational advantage at these sizes. Whether it would help at sizes beyond exact
   enumeration is untested here.
 
