@@ -1,0 +1,1 @@
+# Qiskit is installed by Qollab automatically; NumPy and Matplotlib come with Pyodide.

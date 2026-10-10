@@ -1,0 +1,27 @@
+{
+ "n_obs": 1450,
+ "n_matched": 1447,
+ "max_el_error_deg": {
+  "mean": -0.03639320379664725,
+  "median_abs": 0.2569947194117219,
+  "p95_abs": 0.486904514417877,
+  "frac_within_1deg": 0.9958534899792675
+ },
+ "start_offset_s": {
+  "median": 0.002391,
+  "median_abs": 0.385446,
+  "frac_within_30s": 0.8970283344851416
+ },
+ "end_offset_s": {
+  "median": 1.168513,
+  "median_abs": 1.228511,
+  "frac_within_30s": 0.8963372494816862
+ },
+ "effective_horizon_deg": {
+  "91": 9.96
+ },
+ "config_min_horizon_deg": {
+  "91": 20
+ },
+ "note": "recorded max_altitude is an integer; |error|<=1 deg is the resolution limit. Observation start/end can be shortened by the scheduler (e.g. to avoid overlaps), so start/end offsets are expected to be one-sided."
+}

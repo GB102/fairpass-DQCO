@@ -1,0 +1,8 @@
+{
+ "model_version": "fairpass-0.1.0",
+ "lam": 200.0,
+ "K": 2,
+ "ranking": [],
+ "sum_partial_evpi_kB": 0.0,
+ "day_objective_kB": 121266.92013342214
+}
