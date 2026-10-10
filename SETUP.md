@@ -2,17 +2,17 @@
 # Setup Guide
 
 ## Requirements
-
--   Python 3.12
--   Git
 -   Access to Qollab
--   The repository's `requirements.txt` file
 
 ## Important: Execution Environment
 
 **This project cannot be set up or run on a local computer.** It must be set up and executed within the Qollab environment.
 
 Do not attempt to install the project dependencies or run the application on your local machine. Follow the steps below to configure and run the project on Qollab.
+
+The following specifications were used for our Qollab Environment:
+- **RAM**:
+- **Cores**:
 
 ## Setup Instructions
 
