@@ -75,6 +75,17 @@ figures/         the three report figures
 docs/            feasibility memo, data manifest
 ```
 
+## Contributors and team experiments
+
+* **DQCO fork, by teammate GB102** ([GB102/fairpass-DQCO](https://github.com/GB102/fairpass-DQCO)). It replaces the
+  QAOA window step with Digitized Counterdiabatic Quantum Optimization (DC-QAOA): counterdiabatic Y and YZ/ZY terms in
+  every layer, aimed at larger windows. The preliminary results (exploratory, not fully tested, not part of
+  `REPORT.md`):
+  * On our window sizes it was less accurate than QAOA: best-of-100 dropped from about 99% to 94% (sometimes 85%),
+    while best-of-1000 stayed above 99% and CVaR training still worked.
+  * It starts to match QAOA at around 14-pass windows.
+  * It is much slower to train, and above about 20 passes it is very hard to run.
+
 ## Licences and attribution
 
 * Code and documentation: MIT (see `LICENSE`).

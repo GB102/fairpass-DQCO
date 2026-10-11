@@ -97,6 +97,21 @@ scheduling, the QAOA study and the figures. Run `bash scripts/run_pipeline.sh`. 
 
 ---
 
+**Contributors and team experiments.**
+* **DQCO fork, by teammate GB102** ([github.com/GB102/fairpass-DQCO](https://github.com/GB102/fairpass-DQCO)).
+  **What it tried:** the fork replaces the QAOA window step with Digitized Counterdiabatic Quantum Optimization
+  (DC-QAOA). This adds counterdiabatic driving terms (single-qubit Y and two-qubit YZ/ZY rotations) to every layer,
+  aiming to reach good plans with fewer layers on larger windows.
+* **Preliminary results** (the fork's `scripts/06b_dqco_study.py`; exploratory and not fully tested; not part of the
+  results above):
+  * On our window sizes, DQCO was **less accurate than QAOA**. Best-of-100 quality dropped from about 99% to 94%,
+    and in some cases to 85%. Best-of-1000 stayed above 99%, and CVaR training still worked well.
+  * It only **starts to match QAOA at around 14-pass windows**.
+  * It is **much slower to train**, already at N = 14, and above about N = 20 it becomes very hard to run.
+* **What we learned:** the counterdiabatic terms cost extra two-qubit rotations and training time. At these window
+  sizes that cost isn't repaid. If DQCO helps at all, it would be on larger windows, where simulation and training
+  become the bottleneck. Testing it there against the same classical baselines is the natural next step.
+
 **Limitations.**
 * Results are model expectations; the plan hasn't been executed on the network.
 * Data volume uses a baud-rate proxy.
